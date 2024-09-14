@@ -4,65 +4,48 @@
 #include "GLES3/gl3.h"
 #include <string>
 #include <iostream>
+#include <map>
+#include <memory>
 
+class Shader;
 
-class Shader
+using ShaderPtr = std::unique_ptr<Shader>;
+
+std::map<std::string, ShaderPtr> shaders;
+std::string _currentShaderName = "";
+
+void createShader(const std::string& name, const std::string& vertexShaderSource, const std::string& fragmentShaderSource);
+
+void useShader(const std::string& name);
+
+ShaderPtr& getShader(); 
+
+struct Shader
 {
+    friend void createShader(const std::string& name, const std::string& vertexShaderSource, const std::string& fragmentShaderSource);
+
     public:
         Shader() = default;
-        Shader(const std::string& vertexShaderSource, const std::string& fragmentShaderSource);
-        void use();
-        const unsigned int& getProgram() const;
+        unsigned int& getProgram();
         ~Shader();
 
     private:
-        std::string infoLog;
         unsigned int program;
-        bool isCompiled = true;
-        bool initShader(unsigned int& shader, GLenum type, const std::string& source);
+        void initShader(unsigned int& shader, GLenum type, const std::string& source);
 };
 
-
-Shader::Shader(const std::string& vertexShaderSource, const std::string& fragmentShaderSource)
-{
-    unsigned int vShader, fShader;
-    isCompiled = initShader(vShader, GL_VERTEX_SHADER, vertexShaderSource) &
-        initShader(fShader, GL_FRAGMENT_SHADER, fragmentShaderSource) & 1;
-
-    program = glCreateProgram();
-    glAttachShader(program, vShader);
-    glAttachShader(program, fShader);
-    glLinkProgram(program);
-
-    int status;
-    char log[512];
-    glGetProgramiv(program, GL_LINK_STATUS, &status);
-    if(!status) {
-        glGetProgramInfoLog(program, 512, nullptr, log);
-        std::cerr << log << std::endl;
-    }
-
-    std::cout << (glIsProgram(program) & 1) << std::endl;
-}
-
-
-inline void Shader::use()
-{
-    glUseProgram(program);
-}
-
-inline const unsigned int &Shader::getProgram() const
+inline unsigned int &Shader::getProgram()
 {
     return program;
 }
 
-Shader::~Shader()
+inline Shader::~Shader()
 {
+    std::cout << "Shader is now deleted" << std::endl;
     glDeleteProgram(program);
 }
 
-
-inline bool Shader::initShader(unsigned int &shader, GLenum type, const std::string &source)
+inline void Shader::initShader(unsigned int &shader, GLenum type, const std::string &source)
 {
     const char* src = source.c_str();
     shader = glCreateShader(type);
@@ -76,10 +59,50 @@ inline bool Shader::initShader(unsigned int &shader, GLenum type, const std::str
         glGetShaderInfoLog(shader, 512, nullptr, log);
         std::cerr << log << std::endl;
         glDeleteShader(shader);
-        return false;
+    }
+}
+
+
+void createShader(const std::string& name, const std::string& vertexShaderSource, const std::string& fragmentShaderSource)
+{
+    shaders[name] = std::unique_ptr<Shader>(new Shader());
+
+    unsigned int vShader, fShader;
+    shaders[name]->initShader(vShader, GL_VERTEX_SHADER, vertexShaderSource);
+    shaders[name]->initShader(fShader, GL_FRAGMENT_SHADER, fragmentShaderSource);
+
+    if(!glIsShader(vShader) || !glIsShader(fShader)) return;
+
+    shaders[name]->program = glCreateProgram();
+    glAttachShader(shaders[name]->program, vShader);
+    glAttachShader(shaders[name]->program, fShader);
+    glLinkProgram(shaders[name]->program);
+
+    int status;
+    char log[512];
+    glGetProgramiv(shaders[name]->program, GL_LINK_STATUS, &status);
+    if(!status) {
+        glGetProgramInfoLog(shaders[name]->program, 512, nullptr, log);
+        std::cerr << log << std::endl;
+        return;
     }
 
-    return true;
+    glDeleteShader(vShader);
+    glDeleteShader(fShader);
+
+    useShader(name);
+}
+
+
+void useShader(const std::string& name)
+{
+    _currentShaderName = name;
+    glUseProgram(shaders[name]->getProgram());
+}
+
+inline ShaderPtr &getShader()
+{
+    return shaders[_currentShaderName];
 }
 
 #endif 

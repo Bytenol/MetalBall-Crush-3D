@@ -25,6 +25,7 @@ if(EMSCRIPTEN)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s EXPORTED_FUNCTIONS='[_main]'")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s EXPORTED_RUNTIME_METHODS='[ccall, cwrap]'")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -03 -s USE_WEBGL2=1 -s FULL_ES3=1")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --preload-file ../assets")
 
-    set_target_properties(game PROPERTIES OUTPUT_NAME "StackBall3D")
+    set_target_properties(game PROPERTIES OUTPUT_NAME "../../StackBall3D")
 endif()

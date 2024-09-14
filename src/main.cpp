@@ -4,8 +4,9 @@
  */
 #include <iostream>
 #include <vector>
-#include <map>
 #include <string>
+#include <fstream>
+#include <filesystem>
 
 #include <emscripten/emscripten.h>
 #include <emscripten/html5.h>
@@ -14,49 +15,12 @@
 #include <Shader.h>
 #include <buffer.h>
 
-std::map<std::string, Shader> shaders;
-
 void update(float dt);
 void render();
 void init();
 void mainLoop();
-
-
-const std::string vertexShaderSource = R"(#version 300 es
-layout (location=0) in vec3 position;
-
-void main() {
-    gl_Position = vec4(position, 1.0f);
-})";
-
-const std::string fragmentShaderSource = R"(#version 300 es
-precision highp float;
-
-out vec4 FragColor;
-
-void main() {
-    FragColor = vec4(0.0f, 1.0f, 0.0f, 1.0f);
-})";
-
-unsigned int program;
-
-void initShader(unsigned int &shader, GLenum type, const std::string &source)
-{
-    const char* src = source.c_str();
-    shader = glCreateShader(type);
-    glShaderSource(shader, 1, &src, nullptr);
-    glCompileShader(shader);
-
-    int status;
-    char log[512];
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-    if(!status) {
-        glGetShaderInfoLog(shader, 512, nullptr, log);
-        std::cerr << log << std::endl;
-        glDeleteShader(shader);
-        return;
-    }
-}
+std::string getTextAssets(const char* path);
+void exit();
 
 
 int main(int argc, char const *argv[])
@@ -79,19 +43,18 @@ int main(int argc, char const *argv[])
     emscripten_set_canvas_element_size(canvasId, W, H);
     init();
     emscripten_set_main_loop(mainLoop, 0, 1);
-    
+    exit();
     return 0;
 }
+
 
 void update(float dt)
 {
 }
 
+
 void render()
 {
-    // shader = &shaders["basic"];
-    // shader->use();
-    
     BufferObject b;
     glGenVertexArrays(1, &b.vao);
     glGenBuffers(2, b.vbo);
@@ -109,32 +72,24 @@ void render()
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*)(0));
 
-    glUseProgram(program);
+    useShader("basic");
     glDrawArrays(GL_TRIANGLES, 0, 4);
 
 }
 
+void initShaders() {
+    std::string basicVert = getTextAssets("/assets/shaders/basic.vert");
+    std::string basicFrag = getTextAssets("/assets/shaders/basic.frag");
+
+    createShader("basic", basicVert, basicFrag);
+}
+
+
 void init()
 {
-    unsigned vShader, fShader;
-    initShader(vShader, GL_VERTEX_SHADER, vertexShaderSource);
-    initShader(fShader, GL_FRAGMENT_SHADER, fragmentShaderSource);
-
-    program = glCreateProgram();
-    glAttachShader(program, vShader);
-    glAttachShader(program, fShader);
-    glLinkProgram(program);
-
-    int status;
-    char log[512];
-    glGetProgramiv(program, GL_LINK_STATUS, &status);
-    if(!status) {
-        glGetProgramInfoLog(program, 512, nullptr, log);
-        std::cerr << log << std::endl;
-    }
-
-    std::cout << program << std::endl;
+    initShaders();
 }
+
 
 void mainLoop()
 {
@@ -142,4 +97,20 @@ void mainLoop()
     glClear(GL_COLOR_BUFFER_BIT);
     render();
     update(1/60.0f);    // @todo use real dt for update
+}
+
+
+std::string getTextAssets(const char* path) 
+{
+    std::ifstream file{ path };
+    std::string line, res;
+
+    while (getline(file, line)) res += line + "\n";
+    return res;
+}
+
+
+void exit() 
+{
+
 }
