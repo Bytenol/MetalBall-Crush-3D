@@ -39,7 +39,7 @@ if (ENVIRONMENT_IS_NODE) {
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /tmp/tmp3r7s5k9o.js
+// include: /tmp/tmptvevx2zu.js
 
   if (!Module.expectedDataFileDownloads) {
     Module.expectedDataFileDownloads = 0;
@@ -149,6 +149,7 @@ var REMOTE_PACKAGE_SIZE = metadata['remote_package_size'];
         if (!check) throw msg + new Error().stack;
       }
 Module['FS_createPath']("/", "assets", true, true);
+Module['FS_createPath']("/assets", "images", true, true);
 Module['FS_createPath']("/assets", "obj", true, true);
 Module['FS_createPath']("/assets", "shaders", true, true);
 
@@ -218,25 +219,25 @@ Module['FS_createPath']("/assets", "shaders", true, true);
     }
 
     }
-    loadPackage({"files": [{"filename": "/assets/metalball.obj", "start": 0, "end": 0}, {"filename": "/assets/obj/ball.obj", "start": 0, "end": 11641}, {"filename": "/assets/pole.mtl", "start": 11641, "end": 11692}, {"filename": "/assets/pole.obj", "start": 11692, "end": 13372}, {"filename": "/assets/shaders/basic.frag", "start": 13372, "end": 13505}, {"filename": "/assets/shaders/basic.vert", "start": 13505, "end": 13848}], "remote_package_size": 13848});
+    loadPackage({"files": [{"filename": "/assets/images/stack-ball-break-platform_banner.jpg", "start": 0, "end": 145429}, {"filename": "/assets/metalball.obj", "start": 145429, "end": 145429}, {"filename": "/assets/obj/ball.obj", "start": 145429, "end": 157070}, {"filename": "/assets/pole.mtl", "start": 157070, "end": 157121}, {"filename": "/assets/pole.obj", "start": 157121, "end": 158801}, {"filename": "/assets/shaders/basic.frag", "start": 158801, "end": 158934}, {"filename": "/assets/shaders/basic.vert", "start": 158934, "end": 159277}], "remote_package_size": 159277});
 
   })();
 
-// end include: /tmp/tmp3r7s5k9o.js
-// include: /tmp/tmp8kz_8i8w.js
+// end include: /tmp/tmptvevx2zu.js
+// include: /tmp/tmpfwk8l5as.js
 
     // All the pre-js content up to here must remain later on, we need to run
     // it.
     if (Module['$ww'] || (typeof ENVIRONMENT_IS_PTHREAD != 'undefined' && ENVIRONMENT_IS_PTHREAD)) Module['preRun'] = [];
     var necessaryPreJSTasks = Module['preRun'].slice();
-  // end include: /tmp/tmp8kz_8i8w.js
-// include: /tmp/tmpdt7tf1sb.js
+  // end include: /tmp/tmpfwk8l5as.js
+// include: /tmp/tmprqm6vyco.js
 
     if (!Module['preRun']) throw 'Module.preRun should exist because file support used it; did a pre-js delete it?';
     necessaryPreJSTasks.forEach((task) => {
       if (Module['preRun'].indexOf(task) < 0) throw 'All preRun tasks that exist before user pre-js code should remain after; did you replace Module or modify Module.preRun?';
     });
-  // end include: /tmp/tmpdt7tf1sb.js
+  // end include: /tmp/tmprqm6vyco.js
 
 
 // Sometimes an existing Module object exists with properties
@@ -6060,6 +6061,8 @@ function dbg(...args) {
       GL.postDrawHandleClientVertexAttribBindings();
     };
 
+  var _glEnable = (x0) => GLctx.enable(x0);
+
   var _glEnableVertexAttribArray = (index) => {
       var cb = GL.currentContext.clientBuffers[index];
       cb.enabled = true;
@@ -6569,6 +6572,8 @@ var wasmImports = {
   glDeleteVertexArrays: _glDeleteVertexArrays,
   /** @export */
   glDrawArrays: _glDrawArrays,
+  /** @export */
+  glEnable: _glEnable,
   /** @export */
   glEnableVertexAttribArray: _glEnableVertexAttribArray,
   /** @export */

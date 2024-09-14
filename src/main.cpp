@@ -1,7 +1,3 @@
-/**
- * Draw a simple triangle
- * Load shaders from assets
- */
 #include <iostream>
 #include <vector>
 #include <string>
@@ -20,7 +16,7 @@
 #include <Shader.h>
 #include <buffer.h>
 
-glm::mat4 mProjection, mView, mIdentity;
+glm::mat4 mProjection, mView, mModel, mIdentity;
 
 void update(float dt);
 void render();
@@ -55,14 +51,18 @@ int main(int argc, char const *argv[])
     return 0;
 }
 
+float angle = 0;
 
 void update(float dt)
 {
+    angle += dt;
+    mModel = glm::mat4(1.0f) * glm::rotate(mIdentity, angle, glm::vec3(0.4f, 0.7f, -0.2f));
 }
 
 
 void render()
 {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     BufferObject b;
     glGenVertexArrays(1, &b.vao);
     glGenBuffers(2, b.vbo);
@@ -126,6 +126,7 @@ void render()
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 
     useShader("basic");
+    glUniformMatrix4fv(getUniform("modelMatrix"), 1, false, glm::value_ptr(mModel));
     glDrawArrays(GL_TRIANGLES, 0, (sizeof pos / sizeof(float)) / 3);
 }
 
@@ -136,7 +137,6 @@ void initShaders() {
     createShader("basic", basicVert, basicFrag, {"color", "projectionMatrix", "viewMatrix", "modelMatrix"});
     glUniformMatrix4fv(getUniform("projectionMatrix"), 1, false, glm::value_ptr(mProjection));
     glUniformMatrix4fv(getUniform("viewMatrix"), 1, false, glm::value_ptr(mView));
-    glUniformMatrix4fv(getUniform("modelMatrix"), 1, false, glm::value_ptr(mIdentity));
 }
 
 
@@ -145,6 +145,7 @@ void init(const int& w, const int& h)
     float aspect = float(w) / h;
 
     mIdentity = glm::mat4(1.0f);
+    mModel = glm::mat4(1.0f);
     //@todo reduce the far length
     mProjection = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 1000.0f);
     mView = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.0f));
@@ -153,13 +154,14 @@ void init(const int& w, const int& h)
     initShaders();
 
     glViewport(0, 0, w, h);
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
 
 void mainLoop()
 {
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
     render();
     update(1/60.0f);    // @todo use real dt for update
 }
