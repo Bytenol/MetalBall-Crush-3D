@@ -1,0 +1,11 @@
+{
+    "watch": ["./"],           
+    "ext": "cpp,json,obj",
+    "ignore": ["src/tests"],    
+    "exec": "cd emscripten_build && emcmake cmake ../ && emmake make", 
+    "env": {
+      "NODE_ENV": "development" 
+    },
+    "verbose": true             
+  }
+  
