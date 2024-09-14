@@ -14,15 +14,20 @@ using ShaderPtr = std::unique_ptr<Shader>;
 std::map<std::string, ShaderPtr> shaders;
 std::string _currentShaderName = "";
 
-void createShader(const std::string& name, const std::string& vertexShaderSource, const std::string& fragmentShaderSource);
+void createShader(const std::string& name, const std::string& vertexShaderSource, 
+    const std::string& fragmentShaderSource, const std::vector<std::string>& locations);
 
 void useShader(const std::string& name);
+
+int getUniform(const std::string& name);
 
 ShaderPtr& getShader(); 
 
 struct Shader
 {
-    friend void createShader(const std::string& name, const std::string& vertexShaderSource, const std::string& fragmentShaderSource);
+    friend int getUniform(const std::string& name);
+    friend void createShader(const std::string& name, const std::string& vertexShaderSource, 
+        const std::string& fragmentShaderSource, const std::vector<std::string>& locations);
 
     public:
         Shader() = default;
@@ -31,6 +36,7 @@ struct Shader
 
     private:
         unsigned int program;
+        std::map<std::string, int> uniformLocations;
         void initShader(unsigned int& shader, GLenum type, const std::string& source);
 };
 
@@ -63,7 +69,7 @@ inline void Shader::initShader(unsigned int &shader, GLenum type, const std::str
 }
 
 
-void createShader(const std::string& name, const std::string& vertexShaderSource, const std::string& fragmentShaderSource)
+void createShader(const std::string& name, const std::string& vertexShaderSource, const std::string& fragmentShaderSource, const std::vector<std::string>& locations)
 {
     shaders[name] = std::unique_ptr<Shader>(new Shader());
 
@@ -91,6 +97,11 @@ void createShader(const std::string& name, const std::string& vertexShaderSource
     glDeleteShader(fShader);
 
     useShader(name);
+
+    for(const auto& str: locations) {
+        const char* loc = str.c_str();
+        shaders[name]->uniformLocations[str] = glGetUniformLocation(shaders[name]->program, loc);
+    }
 }
 
 
@@ -99,6 +110,12 @@ void useShader(const std::string& name)
     _currentShaderName = name;
     glUseProgram(shaders[name]->getProgram());
 }
+
+int getUniform(const std::string& name)
+{
+    return getShader()->uniformLocations[name];
+}
+
 
 inline ShaderPtr &getShader()
 {
