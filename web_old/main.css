@@ -1,0 +1,40 @@
+* {
+    user-select: none;
+    -webkit-user-select: none;
+    margin: 0;
+    padding: 0;
+}
+
+.FlexColumn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.GameScene {
+    width: 100%;
+    height: 100%;
+}
+
+#gameArea {
+    width: 100%;
+    height: 100%;
+    max-width: 400px;
+    max-height: 620px;
+}
+
+body {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+}
+
+#cvs {
+    position: relative;
+    top: -100%;
+}
+
+#cvs2 {
+    background-image: linear-gradient(to bottom, purple, orange);
+}
