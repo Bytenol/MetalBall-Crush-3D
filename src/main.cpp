@@ -16,6 +16,8 @@
 #include <Shader.h>
 #include <buffer.h>
 
+int W = 500;
+int H = 640;
 glm::mat4 mProjection, mView, mModel, mIdentity;
 
 void update(float dt);
@@ -26,12 +28,17 @@ std::string getTextAssets(const char* path);
 std::map<std::string, std::vector<float>> objLoader(const char* path);
 void exit();
 
+extern "C" void EMSCRIPTEN_KEEPALIVE setWindowSize(int w, int h)
+{
+    W = w;
+    H = h;
+    emscripten_set_canvas_element_size("#gl", w, h);
+}
+
 
 int main(int argc, char const *argv[])
 {
     const char* canvasId = "#gl";
-    const int W = 500;
-    const int H = 640;
 
     EmscriptenWebGLContextAttributes attr;
     emscripten_webgl_init_context_attributes(&attr);
@@ -44,7 +51,6 @@ int main(int argc, char const *argv[])
     }
 
     emscripten_webgl_make_context_current(context);
-    emscripten_set_canvas_element_size(canvasId, W, H);
     init(W, H);
     emscripten_set_main_loop(mainLoop, 0, 1);
     exit();
@@ -64,81 +70,57 @@ void render()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
-    bindBuffer("cube");
+    // bindBuffer("cube");
+    // useShader("basic");
+    // glUniformMatrix4fv(getUniform("modelMatrix"), 1, false, glm::value_ptr(mModel));
+    // glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    bindBuffer("metalBall");
     useShader("basic");
     glUniformMatrix4fv(getUniform("modelMatrix"), 1, false, glm::value_ptr(mModel));
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glDrawArrays(GL_TRIANGLES, 0, getBuffer()->getSize() / 4 / 9);
 }
 
 void initShaders() {
     std::string basicVert = getTextAssets("/assets/shaders/basic.vert");
     std::string basicFrag = getTextAssets("/assets/shaders/basic.frag");
 
-    createShader("basic", basicVert, basicFrag, {"color", "projectionMatrix", "viewMatrix", "modelMatrix"});
+    createShader("basic", basicVert, basicFrag, {"color", "projectionMatrix", "viewMatrix", "modelMatrix", "directionalLightPos"});
     glUniformMatrix4fv(getUniform("projectionMatrix"), 1, false, glm::value_ptr(mProjection));
     glUniformMatrix4fv(getUniform("viewMatrix"), 1, false, glm::value_ptr(mView));
+    glUniform3f(getUniform("directionalLightPos"), 0.0f, 1.0f, 5.0f);
 }
 
 
 void initBuffers() 
 {
-    float pos[]{
-        // front
-        -1.0, -1.0, 1.0,    1.0, 0.0, 0.0,
-        1.0, -1.0, 1.0,     1.0, 0.0, 0.0,
-        1.0, 1.0, 1.0,      1.0, 0.0, 0.0,
-        -1.0, -1.0, 1.0,    1.0, 0.0, 0.0,
-        1.0, 1.0, 1.0,      1.0, 0.0, 0.0,
-        -1.0, 1.0, 1.0,     1.0, 0.0, 0.0,
+    GLsizeiptr bufferSize;
+    std::vector<float> bufferData;
 
-        // Back face
-        -1.0, -1.0, -1.0,   0.0, 1.0, 0.0,
-        -1.0, 1.0, -1.0,    0.0, 1.0, 0.0,
-        1.0, 1.0, -1.0,     0.0, 1.0, 0.0,
-        -1.0, -1.0, -1.0,   0.0, 1.0, 0.0,
-        1.0, 1.0, -1.0,     0.0, 1.0, 0.0,
-        1.0, -1.0, -1.0,    0.0, 1.0, 0.0,
+    // std::cout << "The size is " << (getBuffer()->getSize() / 4 / 6) << std::endl;
 
-        // Top face
-        -1.0, 1.0, -1.0,    0.0, 0.0, 1.0,
-        -1.0, 1.0, 1.0,     0.0, 0.0, 1.0,
-        1.0, 1.0, 1.0,      0.0, 0.0, 1.0,
-        -1.0, 1.0, -1.0,    0.0, 0.0, 1.0,
-        1.0, 1.0, 1.0,      0.0, 0.0, 1.0,
-        1.0, 1.0, -1.0,     0.0, 0.0, 1.0,
+    // for metal ball
+    auto ballObj = objLoader("/assets/obj/ball.obj");
+    const int ballObjMaxSize = ballObj["vertices"].size();
+    bufferData = ballObj["vertices"];
+    bufferData.insert(bufferData.end(), ballObj["normals"].begin(), ballObj["normals"].end());
 
-        // Bottom face
-        -1.0, -1.0, -1.0,   1.0, 1.0, 0.0,
-        1.0, -1.0, -1.0,    1.0, 1.0, 0.0,
-        1.0, -1.0, 1.0,     1.0, 1.0, 0.0,
-        -1.0, -1.0, -1.0,   1.0, 1.0, 0.0,
-        1.0, -1.0, 1.0,     1.0, 1.0, 0.0,
-        -1.0, -1.0, 1.0,    1.0, 1.0, 0.0,
+    for(int i = 0; i < ballObj["vertices"].size() / 3; i++) 
+    {
+        bufferData.push_back(1.0f);
+        bufferData.push_back(0.0f);
+        bufferData.push_back(0.0f);
+    }
 
-        // Right face
-        1.0, -1.0, -1.0,    1.0, 0.0, 1.0,
-        1.0, 1.0, -1.0,     1.0, 0.0, 1.0,
-        1.0, 1.0, 1.0,      1.0, 0.0, 1.0,
-        1.0, -1.0, -1.0,    1.0, 0.0, 1.0,
-        1.0, 1.0, 1.0,      1.0, 0.0, 1.0,
-        1.0, -1.0, 1.0,     1.0, 0.0, 1.0,
-
-        // Left face
-        -1.0, -1.0, -1.0,   1.0, 1.0, 1.0,
-        -1.0, -1.0, 1.0,    1.0, 1.0, 1.0,
-        -1.0, 1.0, 1.0,     1.0, 1.0, 1.0,
-        -1.0, -1.0, -1.0,   1.0, 1.0, 1.0,
-        -1.0, 1.0, 1.0,     1.0, 1.0, 1.0,
-        -1.0, 1.0, -1.0,    1.0, 1.0, 1.0,
-    };
-    
-    const auto stride = 6 * sizeof(float);
-    createBuffer("cube", 1000, pos, GL_STATIC_DRAW);
+    createBuffer("metalBall", bufferData.size() * sizeof(float), bufferData.data(), GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)(0));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(0));
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(ballObjMaxSize * sizeof(float)));
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(ballObjMaxSize * 2 * sizeof(float)));
     unbindBuffer();
+
 }
 
 
@@ -152,7 +134,6 @@ void init(const int& w, const int& h)
     mProjection = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 1000.0f);
     mView = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -15.0f));
 
-    auto ballObj = objLoader("/assets/obj/ball.obj");
     initShaders();
     initBuffers();
 

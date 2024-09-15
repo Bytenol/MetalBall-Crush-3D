@@ -1,5 +1,2 @@
-Add ball from obj
-Add ambient and Directional lightening
-Make canvas responsive
 Add pole from obj
 Create object vertex data

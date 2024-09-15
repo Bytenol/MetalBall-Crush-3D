@@ -26,9 +26,11 @@ class BufferObject {
         unsigned int& getVAO();
         unsigned int& getVBO();
         unsigned int& getIBO();
+        const GLsizeiptr& getSize();
         ~BufferObject();
 
     private:
+        unsigned int size;
         unsigned int vao;
         unsigned int vbo[2];    // vbo and ibo
 };
@@ -46,6 +48,11 @@ inline unsigned int &BufferObject::getVBO()
 inline unsigned int &BufferObject::getIBO()
 {
     return *(vbo + 1);
+}
+
+inline const GLsizeiptr &BufferObject::getSize()
+{
+    return size;
 }
 
 BufferObject::~BufferObject()
@@ -67,6 +74,7 @@ void createBuffer(const std::string& name, GLsizeiptr size, const void* data, GL
 
     glBufferData(GL_ARRAY_BUFFER, size, data, usage);
     _currentBuffer = name;
+    _buffers[name]->size = size;
 }
 
 

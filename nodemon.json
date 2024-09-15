@@ -1,6 +1,6 @@
 {
     "watch": ["./"],           
-    "ext": "cpp,json,obj",
+    "ext": "cpp,json,obj,vert,frag",
     "ignore": ["src/tests"],    
     "exec": "cd emscripten_build && emcmake cmake ../ && emmake make", 
     "env": {

@@ -47,7 +47,6 @@ inline unsigned int &Shader::getProgram()
 
 inline Shader::~Shader()
 {
-    std::cout << "Shader is now deleted" << std::endl;
     glDeleteProgram(program);
 }
 
@@ -63,7 +62,7 @@ inline void Shader::initShader(unsigned int &shader, GLenum type, const std::str
     glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
     if(!status) {
         glGetShaderInfoLog(shader, 512, nullptr, log);
-        std::cerr << log << std::endl;
+        std::cerr << "SHADER_ERROR" << log << std::endl;
         glDeleteShader(shader);
     }
 }
