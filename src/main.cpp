@@ -63,13 +63,25 @@ void update(float dt)
 void render()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    BufferObject b;
-    glGenVertexArrays(1, &b.vao);
-    glGenBuffers(2, b.vbo);
-    glBindVertexArray(b.vao);
-    glBindBuffer(GL_ARRAY_BUFFER, *b.vbo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *(b.vbo + 1));
+  
+    bindBuffer("cube");
+    useShader("basic");
+    glUniformMatrix4fv(getUniform("modelMatrix"), 1, false, glm::value_ptr(mModel));
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+}
 
+void initShaders() {
+    std::string basicVert = getTextAssets("/assets/shaders/basic.vert");
+    std::string basicFrag = getTextAssets("/assets/shaders/basic.frag");
+
+    createShader("basic", basicVert, basicFrag, {"color", "projectionMatrix", "viewMatrix", "modelMatrix"});
+    glUniformMatrix4fv(getUniform("projectionMatrix"), 1, false, glm::value_ptr(mProjection));
+    glUniformMatrix4fv(getUniform("viewMatrix"), 1, false, glm::value_ptr(mView));
+}
+
+
+void initBuffers() 
+{
     float pos[]{
         // front
         -1.0, -1.0, 1.0,    1.0, 0.0, 0.0,
@@ -119,24 +131,14 @@ void render()
         -1.0, 1.0, 1.0,     1.0, 1.0, 1.0,
         -1.0, 1.0, -1.0,    1.0, 1.0, 1.0,
     };
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * sizeof pos, pos, GL_STATIC_DRAW);
+    
+    const auto stride = 6 * sizeof(float);
+    createBuffer("cube", 1000, pos, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(0));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)(0));
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-
-    useShader("basic");
-    glUniformMatrix4fv(getUniform("modelMatrix"), 1, false, glm::value_ptr(mModel));
-    glDrawArrays(GL_TRIANGLES, 0, (sizeof pos / sizeof(float)) / 3);
-}
-
-void initShaders() {
-    std::string basicVert = getTextAssets("/assets/shaders/basic.vert");
-    std::string basicFrag = getTextAssets("/assets/shaders/basic.frag");
-
-    createShader("basic", basicVert, basicFrag, {"color", "projectionMatrix", "viewMatrix", "modelMatrix"});
-    glUniformMatrix4fv(getUniform("projectionMatrix"), 1, false, glm::value_ptr(mProjection));
-    glUniformMatrix4fv(getUniform("viewMatrix"), 1, false, glm::value_ptr(mView));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float)));
+    unbindBuffer();
 }
 
 
@@ -148,14 +150,16 @@ void init(const int& w, const int& h)
     mModel = glm::mat4(1.0f);
     //@todo reduce the far length
     mProjection = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 1000.0f);
-    mView = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.0f));
+    mView = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -15.0f));
 
     auto ballObj = objLoader("/assets/obj/ball.obj");
     initShaders();
+    initBuffers();
 
     glViewport(0, 0, w, h);
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 }
 

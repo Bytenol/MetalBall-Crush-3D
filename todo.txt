@@ -1,7 +1,5 @@
-enable culling and depth
-Make cube rotate
+Add ball from obj
 Add ambient and Directional lightening
 Make canvas responsive
-Add ball from obj
 Add pole from obj
 Create object vertex data
