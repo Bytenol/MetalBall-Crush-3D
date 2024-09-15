@@ -1,2 +1,6 @@
+Add main object
 Add pole from obj
-Create object vertex data
+Make the ball bounce
+Make the object rotate
+Check for collision
+Break the brick

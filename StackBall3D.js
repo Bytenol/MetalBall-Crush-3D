@@ -39,7 +39,7 @@ if (ENVIRONMENT_IS_NODE) {
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /tmp/tmpp5shys5e.js
+// include: /tmp/tmp7czqwwzy.js
 
   if (!Module.expectedDataFileDownloads) {
     Module.expectedDataFileDownloads = 0;
@@ -219,25 +219,25 @@ Module['FS_createPath']("/assets", "shaders", true, true);
     }
 
     }
-    loadPackage({"files": [{"filename": "/assets/images/stack-ball-break-platform_banner.jpg", "start": 0, "end": 145429}, {"filename": "/assets/metalball.obj", "start": 145429, "end": 145429}, {"filename": "/assets/obj/ball.obj", "start": 145429, "end": 157070}, {"filename": "/assets/pole.mtl", "start": 157070, "end": 157121}, {"filename": "/assets/pole.obj", "start": 157121, "end": 158801}, {"filename": "/assets/shaders/basic.frag", "start": 158801, "end": 159346}, {"filename": "/assets/shaders/basic.vert", "start": 159346, "end": 159855}], "remote_package_size": 159855});
+    loadPackage({"files": [{"filename": "/assets/images/stack-ball-break-platform_banner.jpg", "start": 0, "end": 145429}, {"filename": "/assets/obj/ball.obj", "start": 145429, "end": 157070}, {"filename": "/assets/obj/pole.obj", "start": 157070, "end": 158750}, {"filename": "/assets/shaders/basic.frag", "start": 158750, "end": 159295}, {"filename": "/assets/shaders/basic.vert", "start": 159295, "end": 159804}], "remote_package_size": 159804});
 
   })();
 
-// end include: /tmp/tmpp5shys5e.js
-// include: /tmp/tmpcu6efcnl.js
+// end include: /tmp/tmp7czqwwzy.js
+// include: /tmp/tmp_oubep2h.js
 
     // All the pre-js content up to here must remain later on, we need to run
     // it.
     if (Module['$ww'] || (typeof ENVIRONMENT_IS_PTHREAD != 'undefined' && ENVIRONMENT_IS_PTHREAD)) Module['preRun'] = [];
     var necessaryPreJSTasks = Module['preRun'].slice();
-  // end include: /tmp/tmpcu6efcnl.js
-// include: /tmp/tmp25kzznvy.js
+  // end include: /tmp/tmp_oubep2h.js
+// include: /tmp/tmp3e2hlcx7.js
 
     if (!Module['preRun']) throw 'Module.preRun should exist because file support used it; did a pre-js delete it?';
     necessaryPreJSTasks.forEach((task) => {
       if (Module['preRun'].indexOf(task) < 0) throw 'All preRun tasks that exist before user pre-js code should remain after; did you replace Module or modify Module.preRun?';
     });
-  // end include: /tmp/tmp25kzznvy.js
+  // end include: /tmp/tmp3e2hlcx7.js
 
 
 // Sometimes an existing Module object exists with properties
@@ -6618,6 +6618,8 @@ var wasmImports = {
 };
 var wasmExports = createWasm();
 var ___wasm_call_ctors = createExportWrapper('__wasm_call_ctors', 0);
+var _setCameraPos = Module['_setCameraPos'] = createExportWrapper('setCameraPos', 3);
+var _setCameraTarget = Module['_setCameraTarget'] = createExportWrapper('setCameraTarget', 3);
 var _setWindowSize = Module['_setWindowSize'] = createExportWrapper('setWindowSize', 2);
 var _main = Module['_main'] = createExportWrapper('__main_argc_argv', 2);
 var _fflush = createExportWrapper('fflush', 1);

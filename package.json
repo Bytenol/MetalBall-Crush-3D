@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "dat.gui": "^0.7.9",
     "nodemon": "^3.1.4",
     "vite": "^5.4.5"
   }

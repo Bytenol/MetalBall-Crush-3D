@@ -15,10 +15,11 @@
 
 #include <Shader.h>
 #include <buffer.h>
+#include <Camera.h>
 
 int W = 500;
 int H = 640;
-glm::mat4 mProjection, mView, mModel, mIdentity;
+glm::mat4 mModel;
 
 void update(float dt);
 void render();
@@ -57,12 +58,10 @@ int main(int argc, char const *argv[])
     return 0;
 }
 
-float angle = 0;
 
 void update(float dt)
 {
-    angle += dt;
-    mModel = glm::mat4(1.0f) * glm::rotate(mIdentity, angle, glm::vec3(0.4f, 0.7f, -0.2f));
+    camera._lookAt = glm::lookAt(camera.position, camera.target, camera.up);
 }
 
 
@@ -75,8 +74,17 @@ void render()
     // glUniformMatrix4fv(getUniform("modelMatrix"), 1, false, glm::value_ptr(mModel));
     // glDrawArrays(GL_TRIANGLES, 0, 36);
 
-    bindBuffer("metalBall");
     useShader("basic");
+    glUniformMatrix4fv(getUniform("viewMatrix"), 1, false, glm::value_ptr(camera._lookAt));
+
+    bindBuffer("metalBall");
+    mModel = glm::mat4(1.0f) * glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.0f, 0.0f));
+    // * glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 0.1f, 0.1f));
+    glUniformMatrix4fv(getUniform("modelMatrix"), 1, false, glm::value_ptr(mModel));
+    glDrawArrays(GL_TRIANGLES, 0, getBuffer()->getSize() / 4 / 9);
+
+    bindBuffer("staticBuffer");
+    mModel = glm::mat4(1.0f);
     glUniformMatrix4fv(getUniform("modelMatrix"), 1, false, glm::value_ptr(mModel));
     glDrawArrays(GL_TRIANGLES, 0, getBuffer()->getSize() / 4 / 9);
 }
@@ -86,8 +94,7 @@ void initShaders() {
     std::string basicFrag = getTextAssets("/assets/shaders/basic.frag");
 
     createShader("basic", basicVert, basicFrag, {"color", "projectionMatrix", "viewMatrix", "modelMatrix", "directionalLightPos"});
-    glUniformMatrix4fv(getUniform("projectionMatrix"), 1, false, glm::value_ptr(mProjection));
-    glUniformMatrix4fv(getUniform("viewMatrix"), 1, false, glm::value_ptr(mView));
+    glUniformMatrix4fv(getUniform("projectionMatrix"), 1, false, glm::value_ptr(camera.perspective));
     glUniform3f(getUniform("directionalLightPos"), 0.0f, 1.0f, 5.0f);
 }
 
@@ -121,21 +128,65 @@ void initBuffers()
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(ballObjMaxSize * 2 * sizeof(float)));
     unbindBuffer();
 
+    // obstacle test
+    bufferData.clear();
+
+    unsigned int step = 1;
+    float radius = 1.0f;
+    for(int i = 0; i < 360; i += step)
+    {
+        float a1 = glm::radians(static_cast<float>(i));
+        float a2 = glm::radians(static_cast<float>(i + step));
+
+        float py = 0.0f;
+
+        float px = glm::sin(a1) * radius;
+        float pz = glm::cos(a1) * radius;
+
+        float px2 = glm::sin(a2) * radius;
+        float pz2 = glm::cos(a2) * radius;
+
+        // front data
+        std::vector<float> data = {
+            px, py, pz,                 1.0f, 0.0f, 0.0f,      1.0f, 0.0f, 0.0f,
+            px2, py, pz,                1.0f, 0.0f, 0.0f,      1.0f, 0.0f, 0.0f,
+            px2, py - radius, pz,       1.0f, 0.0f, 0.0f,      1.0f, 0.0f, 0.0f,
+
+            // px, py, pz,                 1.0f, 0.0f, 0.0f,      1.0f, 0.0f, 0.0f,
+            // px2, py, pz,                1.0f, 0.0f, 0.0f,      1.0f, 0.0f, 0.0f,
+            // px2, py + radius, pz,       1.0f, 0.0f, 0.0f,      1.0f, 0.0f, 0.0f,
+        };
+
+        // bufferData.insert(bufferData.end(), data.begin(), data.end());
+    }
+
+    // front data
+    std::vector<float> data = {
+        -1.0, -1.0, 1.0,                 1.0f, 0.0f, 0.0f,      1.0f, 0.0f, 0.0f,
+        1.0, -1.0, 1.0,                1.0f, 0.0f, 0.0f,      1.0f, 0.0f, 0.0f,
+        1.0, 1.0, 1.0,       1.0f, 0.0f, 0.0f,      1.0f, 0.0f, 0.0f,
+    };
+
+    createBuffer("staticBuffer", bufferData.size() * sizeof(float), bufferData.data(), GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(0));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(6 * sizeof(float)));
+    unbindBuffer();
+
 }
 
 
 void init(const int& w, const int& h)
 {
-    float aspect = float(w) / h;
-
-    mIdentity = glm::mat4(1.0f);
-    mModel = glm::mat4(1.0f);
-    //@todo reduce the far length
-    mProjection = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 1000.0f);
-    mView = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -15.0f));
-
+    initCamera(w, h);
     initShaders();
     initBuffers();
+
+    camera.position.y = 0;
+    camera.position.z = 5;
 
     glViewport(0, 0, w, h);
     glEnable(GL_CULL_FACE);
